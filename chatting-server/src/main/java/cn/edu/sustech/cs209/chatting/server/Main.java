@@ -18,18 +18,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Main implements Serializable {
-    /**
-     * server port
-     */
     private static final int SERVER_PORT = 8888;
 
-    /**
-     * reflection between user name and socket
-     */
     private static HashMap<String, Socket> socketsfromUserNames = new HashMap<>();
-    /**
-     * online user list
-     */
+
     private static ArrayList<String> onlineUsers = new ArrayList<>();
 
     private static ArrayList<PrivateChat> privateChats = new ArrayList<>();
@@ -41,17 +33,17 @@ public class Main implements Serializable {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         FileInputStream fileInputStream = new FileInputStream("privateChat.txt");
         ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-        privateChats = (ArrayList<PrivateChat>)objectInputStream.readObject();
+        privateChats = (ArrayList<PrivateChat>) objectInputStream.readObject();
         objectInputStream.close();
         fileInputStream.close();
         FileInputStream fileInputStream1 = new FileInputStream("groupChat.txt");
         ObjectInputStream objectInputStream1 = new ObjectInputStream(fileInputStream1);
-        groupChats = (ArrayList<GroupChat>)objectInputStream1.readObject();
+        groupChats = (ArrayList<GroupChat>) objectInputStream1.readObject();
         objectInputStream1.close();
         fileInputStream1.close();
         FileInputStream fileInputStream2 = new FileInputStream("user.txt");
         ObjectInputStream objectInputStream2 = new ObjectInputStream(fileInputStream2);
-        users = (ArrayList<User>)objectInputStream2.readObject();
+        users = (ArrayList<User>) objectInputStream2.readObject();
         objectInputStream2.close();
         fileInputStream2.close();
         System.out.println("Server start!");
@@ -60,36 +52,38 @@ public class Main implements Serializable {
             @Override
             public void run() {
                 try {
-                    FileOutputStream fileOutputStream = new FileOutputStream("privateChat.txt");
-                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+                    FileOutputStream fileOutputStream =
+                        new FileOutputStream("privateChat.txt");
+                    ObjectOutputStream objectOutputStream =
+                        new ObjectOutputStream(fileOutputStream);
                     objectOutputStream.writeObject(privateChats);
                     objectOutputStream.close();
                     fileOutputStream.close();
-                    FileOutputStream fileOutputStream1 = new FileOutputStream("groupChat.txt");
-                    ObjectOutputStream objectOutputStream1 = new ObjectOutputStream(fileOutputStream1);
+                    FileOutputStream fileOutputStream1 =
+                        new FileOutputStream("groupChat.txt");
+                    ObjectOutputStream objectOutputStream1 =
+                        new ObjectOutputStream(fileOutputStream1);
                     objectOutputStream1.writeObject(groupChats);
                     objectOutputStream1.close();
                     fileOutputStream1.close();
                     FileOutputStream fileOutputStream2 = new FileOutputStream("user.txt");
-                    ObjectOutputStream objectOutputStream2 = new ObjectOutputStream(fileOutputStream2);
+                    ObjectOutputStream objectOutputStream2 =
+                        new ObjectOutputStream(fileOutputStream2);
                     objectOutputStream2.writeObject(users);
                     objectOutputStream2.close();
                     fileOutputStream2.close();
-                }catch (IOException e){
+                } catch (IOException e) {
 
                 }
             }
         });
-        try
-        {
-            while (true)
-            {
+        try {
+            while (true) {
                 Socket s = serverSocket.accept();
                 new Thread(new ServerThread(s)).start();
             }
-        } catch (Exception e)
-        {
-            e.printStackTrace();
+        } catch (Exception e) {
+//            e.printStackTrace();
         }
     }
 
@@ -100,32 +94,24 @@ public class Main implements Serializable {
         objectOutputStream.close();
         fileOutputStream.close();
     }
+
     public void load() throws IOException, ClassNotFoundException {
         FileInputStream fileInputStream = new FileInputStream("privateChat.txt");
         ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-        privateChats = (ArrayList<PrivateChat>)objectInputStream.readObject();
+        privateChats = (ArrayList<PrivateChat>) objectInputStream.readObject();
         objectInputStream.close();
         fileInputStream.close();
     }
 
-    /**
-     * socket thread which is used by server
-     */
-    public static class ServerThread implements Runnable
-    {
+
+    public static class ServerThread implements Runnable {
         private Socket s;
         // read message object which comes from client
         private OIS ois;
         String name;
 
-        /**
-         * constructor
-         *
-         * @param s socket
-         * @throws IOException
-         */
-        public ServerThread(Socket s) throws IOException
-        {
+
+        public ServerThread(Socket s) throws IOException {
 
             this.s = s;
             //initialize the object input stream
@@ -133,22 +119,16 @@ public class Main implements Serializable {
         }
 
         @Override
-        public void run()
-        {
-            try
-            {
-                if (!s.isClosed())
-                {
+        public void run() {
+            try {
+                if (!s.isClosed()) {
                     System.out.println(s + " port has connected to the server!");
                 }
 
-                while (s.isConnected())
-                {
+                while (s.isConnected()) {
                     Message message = (Message) ois.readObject();
-                    if (message != null)
-                    {
-                        switch (message.getType())
-                        {
+                    if (message != null) {
+                        switch (message.getType()) {
                             case "CONNECT":
                                 checkConnect(message);
                                 break;
@@ -189,10 +169,10 @@ public class Main implements Serializable {
                 socketsfromUserNames.remove(name);
                 sendOnlineUserList(true);
                 ois.close();
-            } catch (IOException | ClassNotFoundException e)
-            {
-//                e.printStackTrace();//注释掉就不会报错//////////////////////////////////////////////////////////////////////////////////////////////////////
-            }finally {
+            } catch (IOException | ClassNotFoundException e) {
+//                e.printStackTrace();//注释掉就不会报错////////
+// ////////////////////////////////////////////////////////////////////////////////////////////
+            } finally {
                 onlineUsers.remove(name);
                 socketsfromUserNames.remove(name);
                 try {
@@ -203,49 +183,30 @@ public class Main implements Serializable {
             }
         }
 
-        /**
-         * send message object(point to point)
-         *
-         * @param message
-         * @param socket
-         * @throws IOException
-         */
-        private void send(Message message, Socket socket) throws IOException
-        {
+
+        private void send(Message message, Socket socket) throws IOException {
             System.out.println("Point to point message: " + message);
             OOS oos = new OOS(socket.getOutputStream());
             oos.writeObject(message);
             System.out.println("Message(P) send successfully!");
         }
 
-        /**
-         * send message object(to All)
-         *
-         * @param message
-         * @param removeOwn
-         */
-        private void sendToAll(Message message, boolean removeOwn) throws IOException
-        {
+        private void sendToAll(Message message, boolean removeOwn) throws IOException {
             System.out.println("To all message: " + message);
             //initialize the object output stream
             OOS oos;
-            if (removeOwn)
-            {
+            if (removeOwn) {
                 //acquire Username-Socket of hashmap to traverse to send
-                for (HashMap.Entry<String, Socket> entry : socketsfromUserNames.entrySet())
-                {
+                for (HashMap.Entry<String, Socket> entry : socketsfromUserNames.entrySet()) {
                     //send to all except oneself
-                    if (!entry.getKey().equals(message.getFrom()))
-                    {
+                    if (!entry.getKey().equals(message.getFrom())) {
                         oos = new OOS(entry.getValue().getOutputStream());
                         oos.writeObject(message);
                     }
                 }
-            } else
-            {
+            } else {
                 //send to everyone
-                for (Socket socket : socketsfromUserNames.values())
-                {
+                for (Socket socket : socketsfromUserNames.values()) {
                     oos = new OOS(socket.getOutputStream());
                     oos.writeObject(message);
                 }
@@ -253,19 +214,11 @@ public class Main implements Serializable {
             System.out.println("Message(A) send successfully!");
         }
 
-        /**
-         * check connect and send online notification
-         *
-         * @param message
-         * @throws IOException
-         */
-        private void checkConnect(Message message) throws IOException
-        {
+        private void checkConnect(Message message) throws IOException {
             String username = message.getFrom();
             System.out.println(username + "is coming");
             //check user name from existed username-socket list
-            if (!socketsfromUserNames.containsKey(username))
-            {
+            if (!socketsfromUserNames.containsKey(username)) {
                 socketsfromUserNames.put(username, s);
                 onlineUsers.add(message.getFrom());
                 name = message.getFrom();
@@ -282,8 +235,7 @@ public class Main implements Serializable {
                 sendOnlineUserList(true);
                 //send online notification
                 sendNotification(username + " is online!");
-            } else
-            {
+            } else {
                 System.out.println(username + " login failed!");
                 //feedback message(fail)
                 Message fResult = new Message();
@@ -294,22 +246,15 @@ public class Main implements Serializable {
             }
         }
 
-        /**
-         * close the connect and send offline notification
-         *
-         * @param message
-         * @throws IOException
-         */
-        private void closeConnect(Message message) throws IOException
-        {
+        private void closeConnect(Message message) throws IOException {
             String userName = message.getFrom();
             System.out.println(userName + " ready to login out!");
             Socket socket = socketsfromUserNames.get(userName);
-            if (socket != null)
-            {
+            if (socket != null) {
                 socketsfromUserNames.remove(userName);
             }
-            System.out.println(userName + " login out successful! Ready to update online user list!");
+            System.out.println(userName
+                + " login out successful! Ready to update online user list!");
             //update list
             onlineUsers.removeIf(temp -> temp.equals(userName));
             sendOnlineUserList(true);
@@ -317,38 +262,22 @@ public class Main implements Serializable {
             sendNotification(userName + " is offline!");
         }
 
-        /**
-         * send online user list
-         *
-         * @param isAllUsers
-         * @throws IOException
-         */
-        private void sendOnlineUserList(boolean isAllUsers) throws IOException
-        {
+        private void sendOnlineUserList(boolean isAllUsers) throws IOException {
             System.out.println("Ready to update online user list!");
             //feedback message
             Message uResult = new Message();
             uResult.setType("USERLIST");
             uResult.setUserlist(onlineUsers);
-            if (isAllUsers)
-            {
+            if (isAllUsers) {
                 //send to all
                 sendToAll(uResult, false);
-            } else
-            {
+            } else {
                 send(uResult, s);
             }
             System.out.println("Online user list update successfully!");
         }
 
-        /**
-         * send notification to users
-         *
-         * @param notice notification
-         * @throws IOException
-         */
-        private void sendNotification(String notice) throws IOException
-        {
+        private void sendNotification(String notice) throws IOException {
             System.out.println("Ready to send notification message!");
             Message message = new Message();
             message.setType("NOTIFICATION");
@@ -356,27 +285,19 @@ public class Main implements Serializable {
             sendToAll(message, false);
         }
 
-        /**
-         * send message from client to client / All
-         *
-         * @param message message from client
-         * @throws IOException
-         */
-        private void sendMSG(Message message) throws IOException
-        {
+        private void sendMSG(Message message) throws IOException {
             String userName = message.getFrom();
             String toUser = message.getTo();
             //check receiver
-            if (toUser.equals("@ALL*"))
-            {
+            if (toUser.equals("@ALL*")) {
                 System.out.println(userName + " is sending to All!");
                 // unnecessary to send to oneself
                 sendToAll(message, true);
-            } else
-            {
+            } else {
                 System.out.println(userName + " is sending to user!");
                 for (int i = 0; i < privateChats.size(); i++) {
-                    if(privateChats.get(i).user.contains(message.getFrom())&&privateChats.get(i).user.contains(message.getTo())){
+                    if (privateChats.get(i).user.contains(message.getFrom())
+                         && privateChats.get(i).user.contains(message.getTo())) {
                         privateChats.get(i).messages.add(message);
                     }
                 }
@@ -384,21 +305,20 @@ public class Main implements Serializable {
             }
         }
 
-        private void sendMSGToGroup(Message message) throws IOException
-        {
+        private void sendMSGToGroup(Message message) throws IOException {
             String userName = message.getFrom();
             System.out.println(userName + " is sending to group!");
 
             int k = 0;
             for (int i = 0; i < groupChats.size(); i++) {
-                if(groupChats.get(i).user.size() == message.getUserList().size()){
+                if (groupChats.get(i).user.size() == message.getUserList().size()) {
                     int n = 0;
                     for (int j = 0; j < message.getUserList().size(); j++) {
-                        if(groupChats.get(i).user.contains(message.getUserList().get(j))){
+                        if (groupChats.get(i).user.contains(message.getUserList().get(j))) {
                             n++;
                         }
                     }
-                    if(n == groupChats.get(i).user.size()) {
+                    if (n == groupChats.get(i).user.size()) {
                         k = i;
                         break;
                     }
@@ -406,20 +326,21 @@ public class Main implements Serializable {
             }
             groupChats.get(k).messages.add(message);
             for (int i = 0; i < message.getUserList().size(); i++) {
-                if(!message.getUserList().get(i).equals(userName)){
+                if (!message.getUserList().get(i).equals(userName)) {
                     send(message, socketsfromUserNames.get(message.getUserList().get(i)));
                 }
             }
         }
 
-        private void newPrivatechat(Message message){
+        private void newPrivatechat(Message message) {
             boolean label = false;
             for (int i = 0; i < privateChats.size(); i++) {
-                if(privateChats.get(i).user.contains(message.getFrom())&&privateChats.get(i).user.contains(message.getTo())){
+                if (privateChats.get(i).user.contains(message.getFrom())
+                    && privateChats.get(i).user.contains(message.getTo())) {
                     label = true;
                 }
             }
-            if(!label){
+            if (!label) {
                 PrivateChat privateChat = new PrivateChat();
                 privateChat.user.add(message.getFrom());
                 privateChat.user.add(message.getTo());
@@ -428,23 +349,23 @@ public class Main implements Serializable {
             }
         }
 
-        private void newGroupChat(Message message){
+        private void newGroupChat(Message message) {
             boolean label = false;
             for (int i = 0; i < groupChats.size(); i++) {
-                if(groupChats.get(i).user.size() == message.getUserList().size()){
+                if (groupChats.get(i).user.size() == message.getUserList().size()) {
                     int n = 0;
                     for (int j = 0; j < message.getUserList().size(); j++) {
-                        if(groupChats.get(i).user.contains(message.getUserList().get(j))){
+                        if (groupChats.get(i).user.contains(message.getUserList().get(j))) {
                             n++;
                         }
                     }
-                    if(n== groupChats.get(i).user.size()) {
+                    if (n == groupChats.get(i).user.size()) {
                         label = true;
                         break;
                     }
                 }
             }
-            if(!label){
+            if (!label) {
                 GroupChat groupChat = new GroupChat();
                 groupChat.user.addAll(message.getUserList());
                 groupChats.add(groupChat);
@@ -454,55 +375,56 @@ public class Main implements Serializable {
 
         private void getPrivatechat(Message message) throws IOException {
             for (int i = 0; i < privateChats.size(); i++) {
-                if(privateChats.get(i).user.contains(message.getFrom()) && privateChats.get(i).user.contains(message.getTo())){
+                if (privateChats.get(i).user.contains(message.getFrom())
+                    && privateChats.get(i).user.contains(message.getTo())) {
                     Message message1 = new Message();
                     message1.setType("privatechat");
                     message1.setTo(message.getFrom());
                     message1.setFrom("server");
                     message1.setMessages(privateChats.get(i).messages);
-                    send(message1,socketsfromUserNames.get(message.getFrom()));
+                    send(message1, socketsfromUserNames.get(message.getFrom()));
                 }
             }
         }
+
         private void getGroupchat(Message message) throws IOException {
             for (int i = 0; i < groupChats.size(); i++) {
-                if(groupChats.get(i).user.size() == message.getUserList().size()){
+                if (groupChats.get(i).user.size() == message.getUserList().size()) {
                     int n = 0;
                     for (int j = 0; j < message.getUserList().size(); j++) {
-                        if(groupChats.get(i).user.contains(message.getUserList().get(j))){
+                        if (groupChats.get(i).user.contains(message.getUserList().get(j))) {
                             n++;
                         }
                     }
-                    if(n==message.getUserList().size()){
+                    if (n == message.getUserList().size()) {
                         Message message1 = new Message();
                         message1.setType("groupchat");
                         message1.setTo(message.getFrom());
                         message1.setFrom("server");
                         message1.setMessages(groupChats.get(i).messages);
-                        send(message1,socketsfromUserNames.get(message.getFrom()));
+                        send(message1, socketsfromUserNames.get(message.getFrom()));
                     }
                 }
             }
         }
 
-        private void sendFile(Message message) throws IOException
-        {
+        private void sendFile(Message message) throws IOException {
             send(message, socketsfromUserNames.get(message.getSendTo()));
         }
     }
 }
 
-class PrivateChat implements Serializable{
+class PrivateChat implements Serializable {
     Set<String> user = new HashSet<>();
     ArrayList<Message> messages = new ArrayList<>();
 }
 
-class GroupChat implements Serializable{
+class GroupChat implements Serializable {
     Set<String> user = new HashSet<>();
     ArrayList<Message> messages = new ArrayList<>();
 }
 
-class User implements Serializable{
+class User implements Serializable {
     String username;
     String passport;
 }

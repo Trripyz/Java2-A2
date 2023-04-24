@@ -1,16 +1,13 @@
 package cn.edu.sustech.cs209.chatting.client;
 
 import cn.edu.sustech.cs209.chatting.common.Message;
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.ArrayList;
 import javafx.application.Platform;
@@ -25,9 +22,9 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
-public class Client implements Runnable{
+public class Client implements Runnable {
     private Controller controller;
-    boolean userNameOK = false;
+    boolean userNameOk = false;
     String userName;
     OOS oos;
     OIS ois;
@@ -41,8 +38,9 @@ public class Client implements Runnable{
     ObservableList<String> items2;
     ArrayList<String> chatToGroup = new ArrayList<>();
     Alert dialog;
-    public Client(String userName,ObservableList<String> items,ObservableList<Message> items1,
-        Alert dialog,Controller controller,ObservableList<String> items2) {
+
+    public Client(String userName, ObservableList<String> items, ObservableList<Message> items1,
+        Alert dialog, Controller controller, ObservableList<String> items2) {
         this.userName = userName;
         this.items = items;
         this.items1 = items1;
@@ -54,43 +52,32 @@ public class Client implements Runnable{
     @Override
     public void run() {
         try {
-            Socket s = new Socket("localhost",8888);
+            Socket s = new Socket("localhost", 8888);
             oos = new OOS(s.getOutputStream());
             connect();
             while (s.isConnected()) {
                 ois = new OIS(s.getInputStream());
                 mas = (Message) ois.readObject();
-                if(mas != null){
-                    switch (mas.getType())
-                    {
+                if (mas != null) {
+                    switch (mas.getType()) {
                         case "SUCCESS":
-                            // switch to chat interface
-//                            loginController.changeStage(Main.CHATUIID);
-                            userNameOK = true;
-                            Platform.runLater(() ->{
+                            userNameOk = true;
+                            Platform.runLater(() -> {
                                 controller.currentUsername.setText("Current User: " + userName);
                             });
                             break;
                         case "FAIL":
-                            // login failed, show reason
-//                            loginController.setResultText(message.getContent());
                             break;
                         case "MSG":
-                            // chat interface, two types -> single and multiple
-//                            controller.addOtherMessges(message);
                             receiveMessage(mas);
                             break;
                         case "USERLIST":
-                            // update user list and calculate the number of online users
-//                            controller.setUserList(message.getUserlist());
                             setUserList();
                             break;
                         case "NOTIFICATION":
-                            // online & offline notification
-//                            controller.addNotification(message.getContent());
                             break;
                         case "privatechat":
-                            Platform.runLater(() ->{
+                            Platform.runLater(() -> {
                                 for (int i = 0; i < mas.getMessages().size(); i++) {
                                     items1.add(mas.getMessages().get(i));
                                 }
@@ -98,7 +85,7 @@ public class Client implements Runnable{
                             messages = mas.getMessages();
                             break;
                         case "groupchat":
-                            Platform.runLater(() ->{
+                            Platform.runLater(() -> {
                                 for (int i = 0; i < mas.getMessages().size(); i++) {
                                     items1.add(mas.getMessages().get(i));
                                 }
@@ -116,7 +103,7 @@ public class Client implements Runnable{
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
-            Platform.runLater(() ->{
+            Platform.runLater(() -> {
                 Alert dialog1 = new Alert(AlertType.WARNING);
                 dialog1.setTitle("Information dialog");
                 dialog1.setHeaderText(null);
@@ -129,54 +116,52 @@ public class Client implements Runnable{
 
     public void setUserList() {
         userList = mas.getUserList();
-        Platform.runLater(() ->{
+        Platform.runLater(() -> {
             controller.currentOnlineCnt.setText("Online: " + userList.size());
             for (int i = 0; i < controller.itemsOfPrivate.size(); i++) {
-                if(!userList.contains(controller.itemsOfPrivate.get(i))){
-                    controller.itemsOfPrivateState.set(i,"↓");
+                if (!userList.contains(controller.itemsOfPrivate.get(i))) {
+                    controller.itemsOfPrivateState.set(i, "↓");
                 }
             }
         });
     }
 
     public void send(Message message) {
-        try
-        {
+        try {
             oos.writeObject(message);
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
     public void connect() {
-        //create message class
         Message message = new Message();
         message.setType("CONNECT");
         userList.add(userName);
         message.setUserlist(userList);
         message.setFrom(userName);
-        //send
         send(message);
     }
 
-    public ArrayList<String> getCurrentUser(){
+    public ArrayList<String> getCurrentUser() {
         ArrayList<String> ans = new ArrayList<>();
         for (int i = 0; i < userList.size(); i++) {
-            if(!userList.get(i).equals(userName)){
+            if (!userList.get(i).equals(userName)) {
                 ans.add(userList.get(i));
             }
         }
         return ans;
     }
 
-    public void sendQuireGetPrivateChat(){
+    public void sendQuireGetPrivateChat() {
         Message message = new Message();
         message.setType("getPrivateChat");
         message.setFrom(userName);
         message.setTo(chatTo);
         send(message);
     }
-    public void sendQuireGetGroupChat(){
+
+    public void sendQuireGetGroupChat() {
         Message message = new Message();
         message.setType("getGroupChat");
         message.setUserlist(chatToGroup);
@@ -184,7 +169,7 @@ public class Client implements Runnable{
         send(message);
     }
 
-    public void newPrivateChat(){
+    public void newPrivateChat() {
         Message message = new Message();
         message.setType("NEWPRIVATECHAT");
         message.setFrom(userName);
@@ -192,18 +177,19 @@ public class Client implements Runnable{
         send(message);
     }
 
-    public void newGroupChat(){
+    public void newGroupChat() {
         Message message = new Message();
         message.setType("NEWGROUPCHAT");
         message.setFrom(userName);
         message.setUserlist(chatToGroup);
         send(message);
     }
+
     public boolean isUserNameOK() {
-        return userNameOK;
+        return userNameOk;
     }
 
-    public void sendMessage(String data){
+    public void sendMessage(String data) {
         Message message = new Message();
         message.setTimestamp(System.currentTimeMillis());
         message.setFrom(userName);
@@ -214,7 +200,7 @@ public class Client implements Runnable{
         send(message);
     }
 
-    public void sendGroupMessage(String data){
+    public void sendGroupMessage(String data) {
         Message message = new Message();
         message.setTimestamp(System.currentTimeMillis());
         message.setFrom(userName);
@@ -226,66 +212,67 @@ public class Client implements Runnable{
         send(message);
     }
 
-    public void receiveMessage(Message message){
-        if(!items.contains(message.getFrom())){
-            Platform.runLater(() ->{
+    public void receiveMessage(Message message) {
+        if (!items.contains(message.getFrom())) {
+            Platform.runLater(() -> {
                 items.add("");
                 for (int i = items.size() - 2; i >= 0; i--) {
-                    items.set(i+1,items.get(i));
-                    items2.set(i+1,items2.get(i));
+                    items.set(i + 1, items.get(i));
+                    items2.set(i + 1, items2.get(i));
                 }
-                items.set(0,message.getFrom());
+                items.set(0, message.getFrom());
             });
-        }else {
-            Platform.runLater(() ->{
+        } else {
+            Platform.runLater(() -> {
                 int n = items.indexOf(message.getFrom());
                 for (int i = n; i > 0; i--) {
-                    items.set(i,items.get(i-1));
-                    items2.set(i,items2.get(i-1));
+                    items.set(i, items.get(i - 1));
+                    items2.set(i, items2.get(i - 1));
                 }
-                items.set(0,message.getFrom());
+                items.set(0, message.getFrom());
             });
         }
-        if(chatTo == null || !chatTo.equals(message.getFrom())){
+        if (chatTo == null || !chatTo.equals(message.getFrom())) {
 //            chatTo = message.getFrom();
 //            items1.add(message);
-            Platform.runLater(() ->{
-                items2.set(0,"~");
+            Platform.runLater(() -> {
+                items2.set(0, "~");
             });
         }else {
-            Platform.runLater(() ->{
+            Platform.runLater(() -> {
                 items1.add(message);
             });
         }
     }
-    public void receiveGroupMessage(Message message){
-        if(!controller.itemsOfGroup.contains(message.getUserList())){
-            Platform.runLater(() ->{
+
+    public void receiveGroupMessage(Message message) {
+        if (!controller.itemsOfGroup.contains(message.getUserList())) {
+            Platform.runLater(() -> {
                 controller.itemsOfGroup.add(new ArrayList<>());
                 for (int i = controller.itemsOfGroup.size() - 2; i >= 0; i--) {
-                    controller.itemsOfGroup.set(i+1,controller.itemsOfGroup.get(i));
-                    controller.itemsOfGroupState.set(i+1,controller.itemsOfGroupState.get(i));
+                    controller.itemsOfGroup.set(i + 1, controller.itemsOfGroup.get(i));
+                    controller.itemsOfGroupState.set(i + 1, controller.itemsOfGroupState.get(i));
                 }
-                controller.itemsOfGroup.set(0,message.getUserList());
+                controller.itemsOfGroup.set(0, message.getUserList());
             });
-        }else {
-            Platform.runLater(() ->{
+        } else {
+            Platform.runLater(() -> {
                 int n = controller.itemsOfGroup.indexOf(message.getUserList());
                 for (int i = n; i > 0; i--) {
-                    controller.itemsOfGroup.set(i,controller.itemsOfGroup.get(i-1));
-                    controller.itemsOfGroupState.set(i,controller.itemsOfGroupState.get(i-1));
+                    controller.itemsOfGroup.set(i, controller.itemsOfGroup.get(i - 1));
+                    controller.itemsOfGroupState.set(i, controller.itemsOfGroupState.get(i - 1));
                 }
-                controller.itemsOfGroup.set(0,message.getUserList());
+                controller.itemsOfGroup.set(0, message.getUserList());
             });
         }
-        if(chatToGroup == null || !chatToGroup.equals(message.getUserList())){
+        if (chatToGroup == null || !chatToGroup.equals(message.getUserList())) {
 //            chatTo = message.getFrom();
 //            items1.add(message);
-            Platform.runLater(() ->{
-                controller.itemsOfGroupState.set(0,"~");
+            Platform.runLater(() -> {
+                controller.itemsOfGroupState.set(0, "~");
             });
-        }else {
-            Platform.runLater(() ->{
+        } else {
+            Platform.runLater(() -> {
                 items1.add(message);
             });
         }
@@ -297,11 +284,11 @@ public class Client implements Runnable{
         message.setSendTo(chatTo);
         message.setType("FILE");
         FileInputStream fis = new FileInputStream(file);
-        InputStreamReader isr = new InputStreamReader(fis,"UTF-8");
+        InputStreamReader isr = new InputStreamReader(fis, "UTF-8");
         BufferedReader br = new BufferedReader(isr);
         ArrayList<String> file1 = new ArrayList<>();
         String s = null;
-        while((s = br.readLine()) != null) {
+        while ((s = br.readLine()) != null) {
             file1.add(s);
         }
         System.out.println(file1);
@@ -321,29 +308,30 @@ public class Client implements Runnable{
     }
 
     public void getFile(Message message) throws IOException {
-        Platform.runLater(() ->{
+        Platform.runLater(() -> {
             Stage stage = new Stage();
-            stage.setTitle(message.getFrom()+" send a file");
+            stage.setTitle(message.getFrom() + " send a file");
             ComboBox<String> userSel = new ComboBox<>();
-            userSel.getItems().addAll("download","no download");
+            userSel.getItems().addAll("download", "no download");
             Button okBtn = new Button("OK");
             okBtn.setOnAction(e -> {
                 stage.close();
                 String item = userSel.getSelectionModel().getSelectedItem();
-                if(item.equals("download")){
-                    String Path = "C:\\Users\\zyz'\\Desktop\\" + message.getData();
+                if (item.equals("download")) {
+                    String path = "C:\\Users\\zyz'\\Desktop\\" + message.getData();
 
-                    File file = new File(Path);
+                    File file = new File(path);
                     try {
                         file.createNewFile();
                         OutputStreamWriter osw = new OutputStreamWriter(
-                            new FileOutputStream(Path), "UTF-8");
+                            new FileOutputStream(path), "UTF-8");
                         for (int i = 0; i < message.getUserList().size(); i++) {
                             osw.write(message.getUserList().get(i));
                             osw.write("\n");
                         }
                         osw.close();
                     } catch (IOException ex) {
+
                     }
                 }
             });

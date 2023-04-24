@@ -22,6 +22,7 @@ public class Message implements Serializable {
     private String content;
 
     private ArrayList<Message> messages;
+
     public Message(Long timestamp, String sentBy, String sendTo, String data) {
         this.timestamp = timestamp;
         this.sentBy = sentBy;
