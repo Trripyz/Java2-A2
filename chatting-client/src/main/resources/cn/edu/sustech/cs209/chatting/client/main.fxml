@@ -15,39 +15,69 @@
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="cn.edu.sustech.cs209.chatting.client.Controller">
+<VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cn.edu.sustech.cs209.chatting.client.Controller">
     <MenuBar VBox.vgrow="NEVER">
         <Menu mnemonicParsing="false" text="Chat">
-            <MenuItem mnemonicParsing="false" onAction="#createPrivateChat" text="New Private Chat"/>
-            <MenuItem mnemonicParsing="false" onAction="#createGroupChat" text="New Group Chat"/>
+            <MenuItem mnemonicParsing="false" onAction="#createPrivateChat" text="New Private Chat" />
+            <MenuItem mnemonicParsing="false" onAction="#createGroupChat" text="New Group Chat" />
         </Menu>
     </MenuBar>
     <SplitPane dividerPositions="0.25" focusTraversable="true" VBox.vgrow="ALWAYS">
-        <ListView fx:id="chatList" prefHeight="200.0" prefWidth="200.0"/>
+      <SplitPane dividerPositions="0.9092888243831639" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0">
+         <items>
+            <HBox id="HBox" alignment="CENTER_LEFT" prefHeight="499.0" prefWidth="297.0" spacing="5.0">
+               <padding>
+                  <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+               </padding>
+               <children>
+                  <VBox prefHeight="493.0" prefWidth="256.0">
+                     <children>
+                        <ListView fx:id="chatContentList111" prefHeight="615.0" prefWidth="144.0" />
+                        <ListView fx:id="chatContentList1111" prefHeight="424.0" prefWidth="88.0" />
+                     </children>
+                  </VBox>
+                  <VBox prefHeight="492.0" prefWidth="138.0">
+                     <children>
+                        <ListView fx:id="chatContentList11" prefHeight="683.0" prefWidth="38.0" />
+                        <ListView fx:id="chatContentList112" prefHeight="493.0" prefWidth="119.0" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            <HBox id="HBox" alignment="CENTER_LEFT" prefHeight="498.0" prefWidth="204.0" spacing="5.0">
+               <padding>
+                  <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+               </padding>
+               <children>
+                  <Button maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#doEnter" prefHeight="80.0" prefWidth="353.0" text="Private" />
+                  <Button maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#doGroup" prefHeight="80.0" prefWidth="353.0" text="Group" />
+                  <Button maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#doDelete" prefHeight="80.0" prefWidth="353.0" text="Delete" />
+               </children>
+            </HBox>
+         </items>
+      </SplitPane>
         <SplitPane dividerPositions="0.85" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0">
-            <ListView fx:id="chatContentList" prefHeight="200.0" prefWidth="200.0"/>
+            <ListView fx:id="chatContentList" prefHeight="200.0" prefWidth="200.0" />
             <HBox prefHeight="100.0" prefWidth="200.0">
-                <TextArea fx:id="inputArea" prefHeight="138.0" prefWidth="624.0" HBox.hgrow="ALWAYS"/>
-                <Button maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#doSendMessage"
-                        text="Send" HBox.hgrow="ALWAYS"/>
+                <TextArea fx:id="inputArea" prefHeight="80.0" prefWidth="407.0" HBox.hgrow="ALWAYS" />
+                <Button maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#doSendMessage" prefHeight="80.0" prefWidth="76.0" text="Send" HBox.hgrow="ALWAYS" />
+            <Button maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#doFile" prefHeight="80.0" prefWidth="71.0" text="File" />
             </HBox>
         </SplitPane>
     </SplitPane>
     <HBox id="HBox" alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="NEVER">
         <padding>
-            <Insets bottom="3.0" left="3.0" right="3.0" top="3.0"/>
+            <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
         </padding>
-        <Label fx:id="currentUsername" maxHeight="1.7976931348623157E308"
-               text="Current User: USERNAME" HBox.hgrow="ALWAYS">
+        <Label fx:id="currentUsername" maxHeight="1.7976931348623157E308" text="Current User: USERNAME" HBox.hgrow="ALWAYS">
             <font>
-                <Font size="11.0" fx:id="x3"/>
+                <Font size="11.0" fx:id="x3" />
             </font>
             <textFill>
-                <Color red="0.625" green="0.625" blue="0.625" fx:id="x4"/>
+                <Color red="0.625" green="0.625" blue="0.625" fx:id="x4" />
             </textFill>
         </Label>
-        <Pane HBox.hgrow="ALWAYS"/>
-        <Label fx:id="currentOnlineCnt" font="$x3" text="Online: 1" textFill="$x4" HBox.hgrow="NEVER"/>
+        <Pane HBox.hgrow="ALWAYS" />
+        <Label fx:id="currentOnlineCnt" font="$x3" text="Online: 1" textFill="$x4" HBox.hgrow="NEVER" />
     </HBox>
 </VBox>
